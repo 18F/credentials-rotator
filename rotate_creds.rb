@@ -1,6 +1,6 @@
 require 'json'
 require 'date'
-# require 'byebug'
+require 'byebug'
 
 def get_service_key(guid)
 	JSON.parse(`cf curl /v2/service_keys/#{guid}`)
@@ -24,7 +24,13 @@ def refresh_service_key(service_instance_name)
 	puts "fetching => service-key #{service_instance_name} #{service_key}"
 	sk = `cf service-key #{service_instance_name} #{service_key}`
 	puts sk
-	JSON.parse(sk[(sk.index("\n\n")),1000])
+	sk = JSON.parse(sk[(sk.index("\n\n")),1000])
+	if sk.any?
+		sk['service_key_name'] = service_key
+		sk['service_key_created'] = Date.today.to_s
+		sk['service_instance'] = service_instance_name
+	end
+	sk
 end
 
 
@@ -60,7 +66,27 @@ ARGV.each do |service_instance_guid|
 			puts "service_name => #{service_name}"
 			new_creds = refresh_service_key(service_name)
 		end
-	end
 
-	puts new_creds.inspect
+		circle_token = "<CIRCLE TOKEN>"
+		user_provided_service_name = 'builder_test'
+		if new_creds.any?
+			if user_provided_service_name.to_s !~ /circle/
+				cmd = "cf uups #{user_provided_service_name} -p '#{new_creds.to_json}'"
+				puts cmd
+				puts `#{cmd}`
+			else
+				env_vars = []
+				env_vars << {name: "CF_TEST_USERNAME", value: new_creds['username']}
+				env_vars << {name: "CF_TEST_PASSWORD", value: new_creds['password']}
+				env_vars << {name: "CF_TEST_CREATED", value: new_creds['service_key_created']}
+				env_vars.each do |ev|
+					cmd = "curl -X POST --header \"Content-Type: application/json\" -d '#{ev.to_json}' https://circleci.com/api/v1.1/project/github/18F/federalist/envvar?circle-token=#{circle_token}"
+					puts cmd
+					`#{cmd}`
+					sleep(5)
+				end
+			end
+			puts new_creds.inspect
+		end
+	end
 end
