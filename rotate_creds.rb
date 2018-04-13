@@ -10,7 +10,11 @@ def get_service_keys(service_instance_guid)
 end
 
 def get_service_intsance(service_instance_guid)
-	JSON.parse(`cf curl /v2/service_instances/#{service_instance_guid}`)
+	si = JSON.parse(`cf curl /v2/service_instances/#{service_instance_guid}`)
+	unless si
+		si = JSON.parse(`cf curl /v2/service_instances?q=name:#{service_instance_guid}`)
+	end
+	si
 end
 
 def refresh_service_key(service_instance_name)
@@ -23,25 +27,29 @@ def refresh_service_key(service_instance_name)
 end
 
 
-ARGV.each do |a|
-  puts "Argument: #{a}"
-  keys = get_service_keys(a)
+ARGV.each do |service_instance_guid|
+  puts "Argument: #{service_instance_guid}"
+  keys = get_service_keys(service_instance_guid)
 
 	puts "keys => #{keys}\n\n"
 
-	key = get_service_key(keys.first.to_h["metadata"].to_h["guid"])
+	# if keys.any?
+	# 	key = get_service_key(keys.first.to_h["metadata"].to_h["guid"])
 
+	# 	puts "key => #{key}\n\n"
 
-	puts "key => #{key}\n\n"
+	# 	service_instance_guid = key['entity'].to_h["service_instance_guid"]
 
-	service_instance_guid = key['entity'].to_h["service_instance_guid"]
+	# 	if service_instance_guid
+	# 		puts "service_instance_guid  => #{service_instance_guid}\n\n"
 
-	puts "service_instance_guid  => #{service_instance_guid}\n\n"
+	# 		service_instance = get_service_intsance(service_instance_guid)
 
+	# 		puts "service_instance => #{service_instance}\n\n"
+	# 	end
+	# end
+	
 	service_instance = get_service_intsance(service_instance_guid)
-
-	puts "service_instance => #{service_instance}\n\n"
-
 	service_name = service_instance['entity'].to_h['name']
 
 	puts "service_name => #{service_name}"
