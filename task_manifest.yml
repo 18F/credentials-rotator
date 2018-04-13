@@ -1,6 +1,6 @@
 ---
 applications:
-- name: myapp
+- name: credentials-rotator
   memory: 128MB
   disk_quota: 256MB
   buildpack: ruby_buildpack
