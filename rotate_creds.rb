@@ -1,6 +1,6 @@
 require 'json'
 require 'date'
-require 'byebug'
+# require 'byebug'
 
 def get_service_key(guid)
 	JSON.parse(`cf curl /v2/service_keys/#{guid}`)
@@ -56,9 +56,9 @@ ARGV.each do |service_instance_guid|
 	
 	service_instance = get_service_instance(service_instance_guid)
 	if service_instance
-		keys = get_service_keys(service_instance['metadata']['guid'])
+		# keys = get_service_keys(service_instance['metadata']['guid'])
 
-		puts "keys => #{keys}\n\n"
+		# puts "keys => #{keys}\n\n"
 
 		service_name = service_instance['entity'].to_h['name']
 
@@ -70,10 +70,11 @@ ARGV.each do |service_instance_guid|
 		circle_token = "<CIRCLE TOKEN>"
 		user_provided_service_name = 'builder_test'
 		if new_creds.any?
+			puts new_creds
 			if user_provided_service_name.to_s !~ /circle/
 				cmd = "cf uups #{user_provided_service_name} -p '#{new_creds.to_json}'"
 				puts cmd
-				puts `#{cmd}`
+				`#{cmd}`
 			else
 				env_vars = []
 				env_vars << {name: "CF_TEST_USERNAME", value: new_creds['username']}
@@ -86,7 +87,7 @@ ARGV.each do |service_instance_guid|
 					sleep(5)
 				end
 			end
-			puts new_creds.inspect
+			
 		end
 	end
 end
