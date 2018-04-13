@@ -74,7 +74,7 @@ ARGV.each do |service_instance_guid|
 			if user_provided_service_name.to_s !~ /circle/
 				cmd = "cf uups #{user_provided_service_name} -p '#{new_creds.to_json}'"
 				puts cmd
-				`#{cmd}`
+				puts `#{cmd}`
 			else
 				env_vars = []
 				env_vars << {name: "CF_TEST_USERNAME", value: new_creds['username']}
@@ -83,7 +83,7 @@ ARGV.each do |service_instance_guid|
 				env_vars.each do |ev|
 					cmd = "curl -X POST --header \"Content-Type: application/json\" -d '#{ev.to_json}' https://circleci.com/api/v1.1/project/github/18F/federalist/envvar?circle-token=#{circle_token}"
 					puts cmd
-					`#{cmd}`
+					puts `#{cmd}`
 					sleep(5)
 				end
 			end
