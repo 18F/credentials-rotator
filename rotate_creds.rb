@@ -1,5 +1,6 @@
 require 'json'
 require 'date'
+# require 'byebug'
 
 def get_service_key(guid)
 	JSON.parse(`cf curl /v2/service_keys/#{guid}`)
@@ -9,12 +10,12 @@ def get_service_keys(service_instance_guid)
 	JSON.parse(`cf curl /v2/service_keys?q=service_instance_guid:#{service_instance_guid}`).to_h['resources']
 end
 
-def get_service_intsance(service_instance_guid)
-	si = JSON.parse(`cf curl /v2/service_instances/#{service_instance_guid}`)
-	unless si
-		si = JSON.parse(`cf curl /v2/service_instances?q=name:#{service_instance_guid}`)
+def get_service_instance(service_instance_guid)
+	si = JSON.parse(`cf curl /v2/service_instances/#{service_instance_guid}`).to_h['resources'].to_a
+	if si.empty?
+		si = JSON.parse(`cf curl /v2/service_instances?q=name:#{service_instance_guid}`).to_h['resources'].to_a
 	end
-	si
+	si.first
 end
 
 def refresh_service_key(service_instance_name)
@@ -29,9 +30,7 @@ end
 
 ARGV.each do |service_instance_guid|
   puts "Argument: #{service_instance_guid}"
-  keys = get_service_keys(service_instance_guid)
-
-	puts "keys => #{keys}\n\n"
+  
 
 	# if keys.any?
 	# 	key = get_service_key(keys.first.to_h["metadata"].to_h["guid"])
@@ -49,12 +48,19 @@ ARGV.each do |service_instance_guid|
 	# 	end
 	# end
 	
-	service_instance = get_service_intsance(service_instance_guid)
-	service_name = service_instance['entity'].to_h['name']
+	service_instance = get_service_instance(service_instance_guid)
+	if service_instance
+		keys = get_service_keys(service_instance['metadata']['guid'])
 
-	puts "service_name => #{service_name}"
+		puts "keys => #{keys}\n\n"
 
-	new_creds = refresh_service_key(service_name)
+		service_name = service_instance['entity'].to_h['name']
+
+		if service_name
+			puts "service_name => #{service_name}"
+			new_creds = refresh_service_key(service_name)
+		end
+	end
 
 	puts new_creds.inspect
 end
