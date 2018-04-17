@@ -13,19 +13,15 @@ jobs:
       - run:
           name: Activate venv and install requirements
           command: |
-            
             curl -L -o cf-cli_amd64.deb 'https://cli.run.pivotal.io/stable?release=debian64&source=github'
             sudo dpkg -i cf-cli_amd64.deb
             rm cf-cli_amd64.deb
-
-            # install autopilot
             cf install-plugin autopilot -f -r CF-Community
-
             cf api $CF_API
             cf login -u $CF_USERNAME -p $CF_PASSWORD -o $CF_ORGANIZATION -s $CF_SPACE            
       - run:
           name: Run tests against production instance
-          command: ruby reotate_creds test_service
+          command: ruby rotate_creds test_service
         
 workflows:
   version: 2
