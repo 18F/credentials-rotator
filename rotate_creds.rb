@@ -7,15 +7,15 @@ def get_service_key(guid)
 end
 
 def get_service_keys(service_instance_guid)
-	JSON.parse(`cf curl /v2/service_keys?q=service_instance_guid:#{service_instance_guid}`).to_h['resources']
+	JSON.parse(`cf curl /v2/service_instances/#{service_instance_guid}/service_keys`).to_h['resources']
 end
 
 def get_service_instance(service_instance_guid)
-	si = JSON.parse(`cf curl /v2/service_instances/#{service_instance_guid}`).to_h['resources'].to_a
+	si = JSON.parse(`cf curl /v2/service_instances/#{service_instance_guid}`).to_h
 	if si.empty?
-		si = JSON.parse(`cf curl /v2/service_instances?q=name:#{service_instance_guid}`).to_h['resources'].to_a
+		si = JSON.parse(`cf curl /v2/service_instances?q=name:#{service_instance_guid}`).to_h['resources'].to_a.first.to_h
 	end
-	si.first
+	si
 end
 
 def refresh_service_key(service_instance_name)
@@ -24,70 +24,71 @@ def refresh_service_key(service_instance_name)
 	puts "fetching => service-key #{service_instance_name} #{service_key}"
 	sk = `cf service-key #{service_instance_name} #{service_key}`
 	puts sk
-	sk = JSON.parse(sk[(sk.index("\n\n")),1000])
-	if sk.any?
-		sk['service_key_name'] = service_key
-		sk['service_key_created'] = Date.today.to_s
-		sk['service_instance'] = service_instance_name
+	JSON.parse(sk[(sk.index("\n\n")),1000])
+end
+
+def get_user_provided_service(service_instance_guid = nil)
+	endpoint = "cf curl /v2/user_provided_service_instances"
+	if service_instance_guid
+		ups = JSON.parse(`#{endpoint}/#{service_instance_guid}`).to_h
+		unless ups['entity']
+			ups = JSON.parse(`#{endpoint}?q=name:#{service_instance_guid}`).to_h['resources'].first
+		end
+	else
+		ups = JSON.parse(`#{endpoint}`).to_h
 	end
-	sk
+	ups
 end
 
 
-ARGV.each do |service_instance_guid|
-  puts "Argument: #{service_instance_guid}"
-  
+ARGV.each do |user_provided_service_instance_name|
+  puts "Argument: #{user_provided_service_instance_name}"
+	user_provided_service_instance = get_user_provided_service(user_provided_service_instance_name)
+	if user_provided_service_instance
 
-	# if keys.any?
-	# 	key = get_service_key(keys.first.to_h["metadata"].to_h["guid"])
+		service_key_name = user_provided_service_instance['entity']['credentials']['cloud_gov_service_account_key_name']
+		service_key_guid = user_provided_service_instance['entity']['credentials']['cloud_gov_service_account_key_guid']
 
-	# 	puts "key => #{key}\n\n"
+		service_key = get_service_key(service_key_guid)
 
-	# 	service_instance_guid = key['entity'].to_h["service_instance_guid"]
+		if (Date.today - Date.parse(service_key['metadata']['created_at'])).to_i > 75
+			cloud_gov_service_account = JSON.parse(`cf curl #{service_key['entity']['service_instance_url']}`)
 
-	# 	if service_instance_guid
-	# 		puts "service_instance_guid  => #{service_instance_guid}\n\n"
+			service_key_creds = refresh_service_key(cloud_gov_service_account['entity']['name'])
 
-	# 		service_instance = get_service_intsance(service_instance_guid)
+			all_service_keys = get_service_keys(cloud_gov_service_account['metadata']['guid'])
 
-	# 		puts "service_instance => #{service_instance}\n\n"
-	# 	end
-	# end
-	
-	service_instance = get_service_instance(service_instance_guid)
-	if service_instance
-		# keys = get_service_keys(service_instance['metadata']['guid'])
+			new_service_key = all_service_keys.select{|keys| (keys['entity']['credentials']['username'] == service_key_creds['username']) && (keys['entity']['credentials']['password'] == service_key_creds['password'])}.first
+			#use username and passord values as expected
+			
+			user_provided_service_instance['entity']['credentials'][user_provided_service_instance['entity']['credentials']['username_label'] || 'username'] = new_service_key['entity']['credentials']['username']
+			user_provided_service_instance['entity']['credentials'][user_provided_service_instance['entity']['credentials']['password_label'] || 'password'] = new_service_key['entity']['credentials']['password']		
+			
+			user_provided_service_instance['entity']['credentials']['created_at'] = new_service_key['metadata']['created_at']
+			user_provided_service_instance['entity']['credentials']['cloud_gov_service_account_key_guid'] = new_service_key['metadata']['guid']
+			user_provided_service_instance['entity']['credentials']['cloud_gov_service_account_key_name'] = new_service_key['entity']['name']
+			cmd = "cf uups #{user_provided_service_instance['entity']['name']} -p '#{user_provided_service_instance['entity']['credentials'].to_json}'"
+			puts cmd
+			if `#{cmd}` =~ /OK/
+				puts "\n\n#{user_provided_service_instance['entity']['name']} - Updated Successfully\n\n"
+			end
 
-		# puts "keys => #{keys}\n\n"
+			#refresh user_provided_service_instance
+			user_provided_service_instance = get_user_provided_service(user_provided_service_instance['metadata']['guid'])
 
-		service_name = service_instance['entity'].to_h['name']
+			if user_provided_service_instance['entity']['name'] =~ /circle/ && user_provided_service_instance['entity']['credentials']['username_label'] && user_provided_service_instance['entity']['credentials']['password_label']
 
-		if service_name
-			puts "service_name => #{service_name}"
-			new_creds = refresh_service_key(service_name)
-		end
-
-		circle_token = "<CIRCLE TOKEN>"
-		user_provided_service_name = 'builder_test'
-		if new_creds.any?
-			puts new_creds
-			if user_provided_service_name.to_s !~ /circle/
-				cmd = "cf uups #{user_provided_service_name} -p '#{new_creds.to_json}'"
-				puts cmd
-				puts `#{cmd}`
-			else
 				env_vars = []
-				env_vars << {name: "CF_TEST_USERNAME", value: new_creds['username']}
-				env_vars << {name: "CF_TEST_PASSWORD", value: new_creds['password']}
-				env_vars << {name: "CF_TEST_CREATED", value: new_creds['service_key_created']}
+				env_vars << {name: user_provided_service_instance['entity']['credentials']['username_label'], value: user_provided_service_instance['entity']['credentials'][user_provided_service_instance['entity']['credentials']['username_label']]}
+				env_vars << {name: user_provided_service_instance['entity']['credentials']['password_label'], value: user_provided_service_instance['entity']['credentials'][user_provided_service_instance['entity']['credentials']['password_label']]}
+				env_vars << {name: "#{user_provided_service_instance['entity']['credentials']['password_label']}_CREATED", value: user_provided_service_instance['entity']['credentials']['created_at']}
 				env_vars.each do |ev|
-					cmd = "curl -X POST --header \"Content-Type: application/json\" -d '#{ev.to_json}' https://circleci.com/api/v1.1/project/github/18F/federalist/envvar?circle-token=#{circle_token}"
+					cmd = "curl -X POST --header \"Content-Type: application/json\" -d '#{ev.to_json}' #{user_provided_service_instance['entity']['credentials']['cirle_api_endpoint']}/envvar?circle-token=#{user_provided_service_instance['entity']['credentials']['circle_token']}"
 					puts cmd
 					puts `#{cmd}`
 					sleep(5)
 				end
-			end
-			
+			end				
 		end
 	end
 end
