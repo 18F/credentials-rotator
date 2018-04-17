@@ -40,6 +40,37 @@ def get_user_provided_service(service_instance_guid = nil)
 	ups
 end
 
+puts "\n\nENV ==>\n#{ENV.inspect}\n\n"
+vcap_services = JSON.parse(ENV['VCAP_SERVICES'])
+credentials = vcap_services.to_h["user-provided"].to_a.select{|s| s["instance_name"] == 'test_service'}.first.to_h['credentials'].to_h
+
+	
+if credentials['username'] && credentials['password']
+	CF_ORGANIZATION="sandbox-gsa"
+	CF_API="https://api.fr.cloud.gov"
+
+	CF_SPACE="amir.reavis-bey"
+
+	# puts "install cf cli"
+
+	# puts `curl -L -o cf-cli_amd64.deb 'https://cli.run.pivotal.io/stable?release=debian64&source=github'`
+	# puts `sudo dpkg -i cf-cli_amd64.deb`
+	# puts `rm cf-cli_amd64.deb`
+
+	# # install autopilot
+	# `cf install-plugin autopilot -f -r CF-Community`
+
+	`cf api $CF_API`
+
+	auth_response = `cf login -u #{credentials['username']} -p #{credentials['password']} -o #{CF_ORGANIZATION} -s #{CF_SPACE}`	
+	if auth_response =~ /FAILED/
+		puts "\nCF connection failed .... bye!\n"
+		exit
+	else
+		puts "\nCF connection successful\n"
+	end
+end
+
 
 ARGV.each do |user_provided_service_instance_name|
   puts "Argument: #{user_provided_service_instance_name}"
@@ -51,7 +82,7 @@ ARGV.each do |user_provided_service_instance_name|
 
 		service_key = get_service_key(service_key_guid)
 
-		if (Date.today - Date.parse(service_key['metadata']['created_at'])).to_i > 75
+		if true#(Date.today - Date.parse(service_key['metadata']['created_at'])).to_i > 75
 			cloud_gov_service_account = JSON.parse(`cf curl #{service_key['entity']['service_instance_url']}`)
 
 			service_key_creds = refresh_service_key(cloud_gov_service_account['entity']['name'])
@@ -67,6 +98,7 @@ ARGV.each do |user_provided_service_instance_name|
 			user_provided_service_instance['entity']['credentials']['created_at'] = new_service_key['metadata']['created_at']
 			user_provided_service_instance['entity']['credentials']['cloud_gov_service_account_key_guid'] = new_service_key['metadata']['guid']
 			user_provided_service_instance['entity']['credentials']['cloud_gov_service_account_key_name'] = new_service_key['entity']['name']
+			user_provided_service_instance['entity']['credentials']['last_validated'] = DateTime.now.to_s
 			cmd = "cf uups #{user_provided_service_instance['entity']['name']} -p '#{user_provided_service_instance['entity']['credentials'].to_json}'"
 			puts cmd
 			if `#{cmd}` =~ /OK/
@@ -88,6 +120,13 @@ ARGV.each do |user_provided_service_instance_name|
 					puts `#{cmd}`
 					sleep(5)
 				end
+			end
+		else
+			user_provided_service_instance['entity']['credentials'].merge!({"last_validated" => DateTime.now.to_s})
+			cmd = "cf uups #{user_provided_service_instance['entity']['name']} -p '#{user_provided_service_instance['entity']['credentials'].to_json}'"
+			puts cmd
+			if `#{cmd}` =~ /OK/
+				puts "\n\n#{user_provided_service_instance['entity']['name']} - Updated Successfully\n\n"
 			end				
 		end
 	end

@@ -1,9 +1,0 @@
----
-applications:
-- name: credentials-rotator
-  memory: 128MB
-  disk_quota: 256MB
-  buildpack: ruby_buildpack
-  # command: ruby rotate_creds.rb test-account
-  command: null
-  no-route: true
