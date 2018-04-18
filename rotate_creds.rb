@@ -40,37 +40,6 @@ def get_user_provided_service(service_instance_guid = nil)
 	ups
 end
 
-puts "\n\nENV ==>\n#{ENV.inspect}\n\n"
-vcap_services = JSON.parse(ENV['VCAP_SERVICES'])
-credentials = vcap_services.to_h["user-provided"].to_a.select{|s| s["instance_name"] == 'test_service'}.first.to_h['credentials'].to_h
-
-	
-if credentials['username'] && credentials['password']
-	CF_ORGANIZATION="sandbox-gsa"
-	CF_API="https://api.fr.cloud.gov"
-
-	CF_SPACE="amir.reavis-bey"
-
-	# puts "install cf cli"
-
-	# puts `curl -L -o cf-cli_amd64.deb 'https://cli.run.pivotal.io/stable?release=debian64&source=github'`
-	# puts `sudo dpkg -i cf-cli_amd64.deb`
-	# puts `rm cf-cli_amd64.deb`
-
-	# # install autopilot
-	# `cf install-plugin autopilot -f -r CF-Community`
-
-	`cf api $CF_API`
-
-	auth_response = `cf login -u #{credentials['username']} -p #{credentials['password']} -o #{CF_ORGANIZATION} -s #{CF_SPACE}`	
-	if auth_response =~ /FAILED/
-		puts "\nCF connection failed .... bye!\n"
-		exit
-	else
-		puts "\nCF connection successful\n"
-	end
-end
-
 
 ARGV.each do |user_provided_service_instance_name|
   puts "Argument: #{user_provided_service_instance_name}"
