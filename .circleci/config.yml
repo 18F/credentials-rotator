@@ -18,10 +18,11 @@ jobs:
             rm cf-cli_amd64.deb
             cf install-plugin autopilot -f -r CF-Community
             cf api $CF_API
-            cf login -u $CF_USERNAME -p $CF_PASSWORD -o $CF_ORGANIZATION -s $CF_SPACE            
+            cf login -u $CF_USERNAME -p $CF_PASSWORD -o $CF_ORGANIZATION -s $CF_SPACE
+            echo cf apps
       - run:
           name: Run tests against production instance
-          command: ruby rotate_creds test_service
+          command: echo hello world #ruby rotate_creds test_service
         
 workflows:
   version: 2
