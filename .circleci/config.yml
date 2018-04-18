@@ -21,7 +21,7 @@ jobs:
             cf login -u $CF_USERNAME -p $CF_PASSWORD -o $CF_ORGANIZATION -s $CF_SPACE            
       - run:
           name: Run tests against production instance
-          command: ruby rotate_creds test_service
+          command: ruby rotate_creds.rb test_service
         
 workflows:
   version: 2
