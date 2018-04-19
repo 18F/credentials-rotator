@@ -11,7 +11,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Activate venv and install requirements
+          name: install CF CLI
           command: |
             curl -L -o cf-cli_amd64.deb 'https://cli.run.pivotal.io/stable?release=debian64&source=github'
             sudo dpkg -i cf-cli_amd64.deb
@@ -20,8 +20,11 @@ jobs:
             cf api $CF_API
             cf login -u $CF_TEST_USERNAME -p $CF_TEST_PASSWORD -o $CF_ORGANIZATION -s $CF_SPACE
       - run:
-          name: Run tests against production instance
+          name: Rotate the credentials
           command: ruby rotate_creds.rb test_service
+      - run:
+          name: Delete stale credentials
+          command: ruby delete_service_keys.rb test_service
         
 workflows:
   version: 2
