@@ -52,7 +52,7 @@ ARGV.each do |user_provided_service_instance_name|
 		service_key = get_service_key(service_key_guid)
 
 		if (Date.today - Date.parse(service_key['metadata']['created_at'])).to_i > (user_provided_service_instance['entity']['credentials'].to_h['expire_in_days'] || 75).to_i
-			cloud_gov_service_account = JSON.parse(`cf curl #{service_key['entity']['service_instance_url']}`)
+			cloud_gov_service_account = get_service_instance(service_key['entity']['service_instance_guid'])
 
 			service_key_creds = refresh_service_key(cloud_gov_service_account['entity']['name'])
 
