@@ -6,8 +6,19 @@ def get_service_key(guid)
 	JSON.parse(`cf curl /v2/service_keys/#{guid}`)
 end
 
-def get_service_keys(service_instance_guid)
-	JSON.parse(`cf curl /v2/service_instances/#{service_instance_guid}/service_keys`).to_h['resources']
+def find_service_key(service_instance_guid, username, password)
+	service_key = nil
+	service_keys = get_service_keys(service_instance_guid)
+	while !service_key
+		service_key = service_keys['resources'].to_a.select{|keys| (keys['entity']['credentials']['username'] == username) && (keys['entity']['credentials']['password'] == password)}.first
+		break unless service_keys['next_url']
+		service_keys = JSON.parse(`#{service_keys['next_url']}`)
+	end
+	service_key
+end
+
+def get_service_keys(service_instance_guid, page = 0)
+	JSON.parse(`cf curl /v2/service_instances/#{service_instance_guid}/service_keys`).to_h
 end
 
 def get_service_instance(service_instance_guid)

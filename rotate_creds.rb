@@ -18,8 +18,7 @@ ARGV.each do |user_provided_service_instance_name|
 
 			service_key_creds = refresh_service_key(cloud_gov_service_account['entity']['name'])
 
-			all_service_keys = get_service_keys(cloud_gov_service_account['metadata']['guid'])
-			new_service_key = all_service_keys.select{|keys| (keys['entity']['credentials']['username'] == service_key_creds['username']) && (keys['entity']['credentials']['password'] == service_key_creds['password'])}.first
+			new_service_key = find_service_key(cloud_gov_service_account['metadata']['guid'], service_key_creds['username'], service_key_creds['password'])
 			#use username and passord values as expected
 
 			user_provided_service_instance['entity']['credentials'][user_provided_service_instance['entity']['credentials']['username_label'] || 'username'] = new_service_key['entity']['credentials']['username']
