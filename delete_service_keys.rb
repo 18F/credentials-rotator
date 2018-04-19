@@ -1,6 +1,6 @@
 require 'date'
 require './credentials_requests.rb'
-require 'byebug'
+# require 'byebug'
 
 def delete_old_service_keys(user_provided_service_name_or_guid, days = 90)
 	service_instance = get_user_provided_service(user_provided_service_name_or_guid)
