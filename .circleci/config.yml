@@ -23,8 +23,14 @@ jobs:
           name: Rotate the credentials
           command: ruby rotate_creds.rb test_service
       - run:
+          name: Rotate the credentials
+          command: ruby rotate_creds.rb test_circleci_service
+      - run:
           name: Delete stale credentials
           command: ruby delete_service_keys.rb test_service 2
+      - run:
+          name: Delete stale circleci credentials
+          command: ruby delete_service_keys.rb test_circleci_service 3
         
 workflows:
   version: 2
