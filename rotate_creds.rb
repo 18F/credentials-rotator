@@ -24,7 +24,7 @@ ARGV.each do |user_provided_service_instance_name|
 			user_provided_service_instance['entity']['credentials'][user_provided_service_instance['entity']['credentials']['username_label'] || 'username'] = new_service_key['entity']['credentials']['username']
 			user_provided_service_instance['entity']['credentials'][user_provided_service_instance['entity']['credentials']['password_label'] || 'password'] = new_service_key['entity']['credentials']['password']		
 			
-			user_provided_service_instance['entity']['credentials']['created_at'] = new_service_key['metadata']['created_at']
+			user_provided_service_instance['entity']['credentials']['rotated_at'] = new_service_key['metadata']['created_at']
 			user_provided_service_instance['entity']['credentials']['cloud_gov_service_account_key_guid'] = new_service_key['metadata']['guid']
 			user_provided_service_instance['entity']['credentials']['cloud_gov_service_account_key_name'] = new_service_key['entity']['name']
 			user_provided_service_instance['entity']['credentials']['last_checked'] = DateTime.now.to_s
@@ -63,7 +63,7 @@ ARGV.each do |user_provided_service_instance_name|
 			if `#{cmd}` =~ /OK/
 				puts "\n\n#{user_provided_service_instance['entity']['name']} - Updated Successfully\n\n"
 			else
-				raise "\n\nFAILED: #{user_provided_service_instance['entity']['name']} - Updating last checkedtimestamp #{user_provided_service_instance['entity']['name']} FAILED!!!\n\n"
+				raise "\n\nFAILED: #{user_provided_service_instance['entity']['name']} - Updating last checked timestamp #{user_provided_service_instance['entity']['name']} FAILED!!!\n\n"
 			end				
 		end
 	end

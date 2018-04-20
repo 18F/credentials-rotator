@@ -24,7 +24,7 @@ jobs:
           command: ruby rotate_creds.rb test_service
       - run:
           name: Delete stale credentials
-          command: ruby delete_service_keys.rb test_service
+          command: ruby delete_service_keys.rb test_service 2
         
 workflows:
   version: 2

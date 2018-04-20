@@ -18,4 +18,4 @@ def delete_old_service_keys(user_provided_service_name_or_guid, days = 90)
 	end
 end
 
-delete_old_service_keys(ARGV[0], ARGV[1])
+delete_old_service_keys(ARGV[0], ARGV[1] || 90)
