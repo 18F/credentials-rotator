@@ -14,7 +14,7 @@ def delete_old_service_keys(user_provided_service_name_or_guid, days = 90)
 			delete_service_key(deployer_service['entity']['name'], sk['entity']['name'])
 		end
 		break unless service_keys['next_url']
-		service_keys = JSON.parse(`#{service_keys['next_url']}`)
+		service_keys = JSON.parse(`cf curl "#{service_keys['next_url']}"`)
 	end
 end
 

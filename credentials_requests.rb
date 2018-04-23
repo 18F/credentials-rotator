@@ -12,7 +12,7 @@ def find_service_key(service_instance_guid, username, password)
 	while !service_key
 		service_key = service_keys['resources'].to_a.select{|keys| (keys['entity']['credentials']['username'] == username) && (keys['entity']['credentials']['password'] == password)}.first
 		break unless service_keys['next_url']
-		service_keys = JSON.parse(`#{service_keys['next_url']}`)
+		service_keys = JSON.parse(`cf curl "#{service_keys['next_url']}"`)
 	end
 	service_key
 end
