@@ -41,10 +41,11 @@ workflows:
     environment:
         SPACE: staging
     jobs:
-      - update_service_keys
-        branches:
-          only:
-            -staging
+      build:
+        - update_service_keys
+          branches:
+            only:
+              -staging
   # nightly_staging:
   #   environment:
   #       SPACE: staging
