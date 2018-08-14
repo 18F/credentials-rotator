@@ -32,9 +32,9 @@ end
 def refresh_service_key(service_instance_name)
 	service_key = "#{service_instance_name}-#{DateTime.now.strftime("%Y%m%d%H%M%S")}"
 	`cf create-service-key #{service_instance_name} #{service_key}`
-	puts "fetching => service-key #{service_instance_name} #{service_key}"
+	# puts "fetching => service-key #{service_instance_name} #{service_key}"
 	sk = `cf service-key #{service_instance_name} #{service_key}`
-	puts sk
+
 	JSON.parse(sk[(sk.index("\n\n")),1000])
 end
 

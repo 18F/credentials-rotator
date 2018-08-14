@@ -4,7 +4,7 @@ require './credentials_requests.rb'
 
 def delete_old_service_keys(user_provided_service_name_or_guid, days = 90)
 	service_instance = get_user_provided_service(user_provided_service_name_or_guid)
-	latest_service_key = get_service_key(service_instance['entity']['credentials']['cloud_gov_service_account_key_guid'])
+	latest_service_key = get_service_key(service_instance['entity']['credentials']['SERVICE_KEY_GUID'])
 
 	deployer_service = get_service_instance(latest_service_key['entity']["service_instance_guid"])
 

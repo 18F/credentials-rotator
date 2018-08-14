@@ -4,7 +4,6 @@ require './credentials_requests.rb'
 # require 'byebug'
 
 ARGV.each do |user_provided_service_instance_name|
-# byebug	
   puts "Argument: #{user_provided_service_instance_name}"
 	user_provided_service_instance = get_user_provided_service(user_provided_service_instance_name)
 	if user_provided_service_instance
@@ -25,12 +24,11 @@ ARGV.each do |user_provided_service_instance_name|
 			user_provided_service_instance['entity']['credentials'][user_provided_service_instance['entity']['credentials']["USERNAME_LABEL"] || 'SERVICE_KEY_USERNAME'] = new_service_key['entity']['credentials']['username']
 			user_provided_service_instance['entity']['credentials'][user_provided_service_instance['entity']['credentials']["PASSWORD_LABEL"] || 'SERVICE_KEY_PASSWORD'] = new_service_key['entity']['credentials']['password']		
 			
-			# user_provided_service_instance['entity']['credentials']['rotated_at'] = new_service_key['metadata']['created_at']
 			user_provided_service_instance['entity']['credentials']['SERVICE_KEY_GUID'] = new_service_key['metadata']['guid']
 			user_provided_service_instance['entity']['credentials']['SERVICE_KEY_NAME'] = new_service_key['entity']['name']
 			user_provided_service_instance['entity']['credentials']['SERVICE_KEY_CREATED'] = new_service_key['metadata']['created_at']
 			cmd = "cf uups #{user_provided_service_instance['entity']['name']} -p '#{user_provided_service_instance['entity']['credentials'].to_json}'"
-			puts cmd
+
 			if `#{cmd}` =~ /OK/
 				puts "\n\n#{user_provided_service_instance['entity']['name']} - Updated credentials Successfully\n\n"
 			else
@@ -48,23 +46,14 @@ ARGV.each do |user_provided_service_instance_name|
 					env_vars = []
 					env_vars << {name: user_provided_service_instance['entity']['credentials']["USERNAME_LABEL"], value: user_provided_service_instance['entity']['credentials'][user_provided_service_instance['entity']['credentials']["USERNAME_LABEL"]]}
 					env_vars << {name: user_provided_service_instance['entity']['credentials']["PASSWORD_LABEL"], value: user_provided_service_instance['entity']['credentials'][user_provided_service_instance['entity']['credentials']["PASSWORD_LABEL"]]}
-					env_vars << {name: "#{user_provided_service_instance['entity']['credentials']['password_label']}_CREATED", value: user_provided_service_instance['entity']['credentials']['created_at']}
 					env_vars.each do |ev|
 						cmd = "curl -X POST --header \"Content-Type: application/json\" -d '#{ev.to_json}' #{user_provided_service_instance['entity']['credentials']["CIRCLECI_ENDPOINT"]}envvar?circle-token=#{user_provided_service_instance['entity']['credentials']["CIRCLECI_TOKEN"]}"
-						puts `#{cmd}`
+						val =  `#{cmd}`
+						raise "FAILED (CircleCI): Unable to save #{ev[:name]}" unless ev[:value].end_with?(JSON.parse(val)['value'][-4,4])
 						sleep(5)
 					end
 				end
 			end
-		# else
-		# 	user_provided_service_instance['entity']['credentials'].merge!({"last_checked" => DateTime.now.to_s})
-		# 	cmd = "cf uups #{user_provided_service_instance['entity']['name']} -p '#{user_provided_service_instance['entity']['credentials'].to_json}'"
-		# 	puts cmd
-		# 	if `#{cmd}` =~ /OK/
-		# 		puts "\n\n#{user_provided_service_instance['entity']['name']} - Updated Successfully\n\n"
-		# 	else
-		# 		raise "\n\nFAILED: #{user_provided_service_instance['entity']['name']} - Updating last checked timestamp #{user_provided_service_instance['entity']['name']} FAILED!!!\n\n"
-		# 	end
 		end
 	end
 end
