@@ -6,10 +6,10 @@ default-docker-config: &default-docker-config
 
 jobs:
   build:
-    # filters:
-    #   branches:
-    #     only:
-    #       - staging
+    filters:
+      branches:
+        only:
+          - staging
     <<: *default-docker-config
 
     steps:

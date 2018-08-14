@@ -1,5 +1,4 @@
 #!/bin/bash
-echo HELLO
 set -e
 
 CF_ORGANIZATION="gsa-18f-federalist"
@@ -15,11 +14,12 @@ cf install-plugin autopilot -f -r CF-Community
 
 cf api $CF_API
 
-echo WORLD
 if [ "$CIRCLE_BRANCH" == "master" ]; then
+  echo "HELLO"
   CF_SPACE="production"
   cf login -u $CF_USERNAME_PRODUCTION -p $CF_PASSWORD_PRODUCTION -o $CF_ORGANIZATION -s $CF_SPACE
 elif [ "$CIRCLE_BRANCH" == "staging" ]; then
+  echo "WORLD"
   CF_SPACE="staging"
   cf login -u $CF_USERNAME_STAGING -p $CF_PASSWORD_STAGING -o $CF_ORGANIZATION -s $CF_SPACE
 else
