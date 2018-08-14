@@ -5,20 +5,21 @@ default-docker-config: &default-docker-config
     - image: circleci/ruby:2.5
 
 jobs:
-  update_service_keys:
+  build:
+    filters:
+      branches:
+        only:
+          - staging
     <<: *default-docker-config
 
     steps:
       - checkout
       - run:
-          name: install CF CLI
-          command: |
-            curl -L -o cf-cli_amd64.deb 'https://cli.run.pivotal.io/stable?release=debian64&source=github'
-            sudo dpkg -i cf-cli_amd64.deb
-            rm cf-cli_amd64.deb
-            cf install-plugin autopilot -f -r CF-Community
-            cf api $CF_API
-            cf login -u $CF_USERNAME_STAGING -p $CF_PASSWORD_STAGING -o $CF_ORGANIZATION -s $SPACE
+          name: Lint changed files
+          command: scripts/cf_login.sh
+      - run:
+          name: Rotate the credentials-rotator-user credentials
+          command: ruby rotate_creds.rb credentials-rotator-user
       # - run:
       #     name: Rotate the federalist-deploy-user credentials
       #     command: ruby rotate_creds.rb federalist-deploy-user
@@ -31,31 +32,18 @@ jobs:
       # - run:
       #     name: Delete stale circleci credentials
       #     command: ruby delete_service_keys.rb ci-deploy-user
-      - run:
-          name: Rotate the federalist-deploy-user credentials
-          command: ruby rotate_creds.rb test-deploy-user
+
         
 workflows:
   version: 2
-  rotate-staging:
-    environment:
-        SPACE: staging
+  nightly_staging:
     jobs:
-      build:
-        - update_service_keys
+      - build
+    triggers:
+      - schedule:
+        # every night at 6:11 AM UTC
+        cron: "11 06 * * *"
+        filters:
           branches:
             only:
-              -staging
-  # nightly_staging:
-  #   environment:
-  #       SPACE: staging
-  #   jobs:
-  #     - update_service_keys
-  #   triggers:
-  #     - schedule:
-  #       # every night at 6:11 AM UTC
-  #       cron: "11 06 * * *"
-  #       filters:
-  #         branches:
-  #           only:
-  #             - staging
+              - staging
