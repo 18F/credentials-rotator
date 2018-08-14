@@ -3,7 +3,8 @@ set -e
 
 CF_ORGANIZATION="gsa-18f-federalist"
 CF_API="https://api.fr.cloud.gov"
-
+echo BRANCH
+echo $CIRCLE_BRANCH
 if [ "$CIRCLE_BRANCH" == "master" ]; then
   CF_USERNAME=$CF_USERNAME_PRODUCTION
   CF_PASSWORD=$CF_PASSWORD_PRODUCTION
