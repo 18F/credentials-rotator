@@ -16,7 +16,7 @@ jobs:
       - checkout
       - run:
           name: Lint changed files
-          command: ./scripts/cf_login.sh
+          command: ./ci-scripts/cf_login.sh
       - run:
           name: Rotate the credentials-rotator-user credentials
           command: ruby rotate_creds.rb credentials-rotator-user
