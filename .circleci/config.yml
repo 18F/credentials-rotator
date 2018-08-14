@@ -3,11 +3,11 @@ version: 2.0
 default-docker-config: &default-docker-config
   docker:
     - image: circleci/ruby:2.5
-      environment:
-        # CF_ORGANIZATION: my_env
+
 jobs:
-  update_test_service:
+  update_service_keys:
     <<: *default-docker-config
+
     steps:
       - checkout
       - run:
@@ -18,33 +18,43 @@ jobs:
             rm cf-cli_amd64.deb
             cf install-plugin autopilot -f -r CF-Community
             cf api $CF_API
-            cf login -u $CF_TEST_USERNAME -p $CF_TEST_PASSWORD -o $CF_ORGANIZATION -s $CF_SPACE
+            cf login -u $CF_USERNAME_STAGING -p $CF_PASSWORD_STAGING -o $CF_ORGANIZATION -s $SPACE
+      # - run:
+      #     name: Rotate the federalist-deploy-user credentials
+      #     command: ruby rotate_creds.rb federalist-deploy-user
+      # - run:
+      #     name: Rotate the ci-deploy-user credentials
+      #     command: ruby rotate_creds.rb ci-deploy-user
+      # - run:
+      #     name: Delete stale federalist-deploy credentials
+      #     command: ruby delete_service_keys.rb federalist-deploy-user
+      # - run:
+      #     name: Delete stale circleci credentials
+      #     command: ruby delete_service_keys.rb ci-deploy-user
       - run:
-          name: Rotate the credentials
-          command: ruby rotate_creds.rb test_service
-      - run:
-          name: Rotate the credentials
-          command: ruby rotate_creds.rb test_circleci_service
-      - run:
-          name: Delete stale credentials
-          command: ruby delete_service_keys.rb test_service 2
-      - run:
-          name: Delete stale circleci credentials
-          command: ruby delete_service_keys.rb test_circleci_service 3
+          name: Rotate the federalist-deploy-user credentials
+          command: ruby rotate_creds.rb test-deploy-user
         
 workflows:
   version: 2
-  login-and-rotate:
+  rotate-staging:
+    environment:
+        SPACE: staging
     jobs:
-      - update_test_service
-  #nightly:
-  #  jobs:
-  #    - update_test_service
-  #  triggers:
-  #    - schedule:
-  #        # every night at 6:11 AM UTC
-  #        cron: "11 06 * * *"
-  #        filters:
-  #          branches:
-  #            only:
-  #              - master
+      - update_service_keys
+        branches:
+          only:
+            -staging
+  # nightly_staging:
+  #   environment:
+  #       SPACE: staging
+  #   jobs:
+  #     - update_service_keys
+  #   triggers:
+  #     - schedule:
+  #       # every night at 6:11 AM UTC
+  #       cron: "11 06 * * *"
+  #       filters:
+  #         branches:
+  #           only:
+  #             - staging
