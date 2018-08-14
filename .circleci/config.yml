@@ -34,16 +34,16 @@ jobs:
       #     command: ruby delete_service_keys.rb ci-deploy-user
 
         
-workflows:
-  version: 2
-  nightly_staging:
-    jobs:
-      - build
-    triggers:
-      - schedule:
-        # every night at 6:11 AM UTC
-        cron: "11 06 * * *"
-        filters:
-          branches:
-            only:
-              - staging
+# workflows:
+#   version: 2
+#   nightly_staging:
+#     jobs:
+#       - build
+#     triggers:
+#       - schedule:
+#         # every night at 6:11 AM UTC
+#         cron: "11 06 * * *"
+#         filters:
+#           branches:
+#             only:
+#               - staging
