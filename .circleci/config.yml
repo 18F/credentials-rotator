@@ -5,7 +5,7 @@ default-docker-config: &default-docker-config
     - image: circleci/ruby:2.5
 
 jobs:
-  rotate_credentials:
+  rotate_credentials-rotator-user:
     <<: *default-docker-config
 
     steps:
@@ -17,24 +17,50 @@ jobs:
           name: Rotate the credentials-rotator-user credentials
           command: ruby rotate_creds.rb credentials-rotator-user
       - run:
+          name: Delete stale credentials-rotator-user credentials
+          command: ruby delete_service_keys.rb credentials-rotator-user
+
+  rotate_federalist-deploy-user:
+    <<: *default-docker-config
+
+    steps:
+      - checkout
+      - run:
+          name: login to cf
+          command: bash ./ci-scripts/cf_login.sh
+      - run:
           name: Rotate the federalist-deploy-user credentials
           command: ruby rotate_creds.rb federalist-deploy-user
+      - run:
+          name: Delete stale federalist-deploy credentials
+          command: ruby delete_service_keys.rb federalist-deploy-user
+
+  rotate_ci-deploy-federalist-user:
+    <<: *default-docker-config
+
+    steps:
+      - checkout
+      - run:
+          name: login to cf
+          command: bash ./ci-scripts/cf_login.sh
       - run:
           name: Rotate the ci-deploy-federalist-user credentials
           command: ruby rotate_creds.rb ci-deploy-federalist-user
       - run:
-          name: Rotate the ci-deploy-federalist-builder-user credentials
-          command: ruby rotate_creds.rb ci-deploy-federalist-builder-user
-
-      - run:
-          name: Delete stale credentials-rotator-user credentials
-          command: ruby delete_service_keys.rb credentials-rotator-user
-      - run:
-          name: Delete stale federalist-deploy credentials
-          command: ruby delete_service_keys.rb federalist-deploy-user
-      - run:
           name: Delete stale ci-deploy-federalist-user credentials
           command: ruby delete_service_keys.rb ci-deploy-federalist-user
+  
+  rotate_ci-deploy-federalist-builder-user:
+    <<: *default-docker-config
+
+    steps:
+      - checkout
+      - run:
+          name: login to cf
+          command: bash ./ci-scripts/cf_login.sh
+      - run:
+          name: Rotate the ci-deploy-federalist-builder-user credentials
+          command: ruby rotate_creds.rb ci-deploy-federalist-builder-user
       - run:
           name: Delete stale ci-deploy-federalist-builder-user credentials
           command: ruby delete_service_keys.rb ci-deploy-federalist-builder-user
@@ -42,16 +68,50 @@ jobs:
         
 workflows:
   version: 2
-  # login_and_rotate:
-  #   jobs:
-  #     - rotate_credentials
   nightly_staging:
     jobs:
-      - rotate_credentials
+      - rotate_credentials-rotator-user
     triggers:
       - schedule:
           # every night at 06:00 UTC
-          cron: "02 18 * * *"
+          # cron: "00 06 * * *"
+          cron: "50 20 * * *"
+          filters:
+            branches:
+              only:
+                - staging
+  nightly_staging:
+    jobs:
+      - rotate_federalist-deploy-user
+    triggers:
+      - schedule:
+          # every night at 06:04 UTC
+          # cron: "04 06 * * *"
+          cron: "50 20 * * *"
+          filters:
+            branches:
+              only:
+                - staging
+  nightly_staging:
+    jobs:
+      - rotate_ci-deploy-federalist-user
+    triggers:
+      - schedule:
+          # every night at 06:08 UTC
+          # cron: "08 06 * * *"
+          cron: "50 20 * * *"
+          filters:
+            branches:
+              only:
+                - staging
+  nightly_staging:
+    jobs:
+      - rotate_ci-deploy-federalist-builder-user
+    triggers:
+      - schedule:
+          # every night at 06:12 UTC
+          # cron: "12 06 * * *"
+          cron: "50 20 * * *"
           filters:
             branches:
               only:
