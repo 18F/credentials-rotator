@@ -68,7 +68,7 @@ jobs:
         
 workflows:
   version: 2
-  nightly_staging:
+  nightly_credentials-rotator-user:
     jobs:
       - rotate_credentials-rotator-user
     triggers:
@@ -80,7 +80,7 @@ workflows:
             branches:
               only:
                 - staging
-  nightly_staging:
+  nightly_federalist-deploy-user:
     jobs:
       - rotate_federalist-deploy-user
     triggers:
@@ -92,7 +92,7 @@ workflows:
             branches:
               only:
                 - staging
-  nightly_staging:
+  nightly_ci-deploy-federalist-user:
     jobs:
       - rotate_ci-deploy-federalist-user
     triggers:
@@ -104,7 +104,7 @@ workflows:
             branches:
               only:
                 - staging
-  nightly_staging:
+  nightly_ci-deploy-federalist-builder-user:
     jobs:
       - rotate_ci-deploy-federalist-builder-user
     triggers:
