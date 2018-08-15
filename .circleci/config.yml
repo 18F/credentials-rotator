@@ -44,7 +44,7 @@ workflows:
     triggers:
       - schedule:
         # every night at 13:00 UTC
-        cron: "00 13 * * *"
+        cron: "40 13 * * *"
         filters:
           branches:
             only:
