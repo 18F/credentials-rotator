@@ -17,20 +17,27 @@ jobs:
           name: Rotate the credentials-rotator-user credentials
           command: ruby rotate_creds.rb credentials-rotator-user
       - run:
-          name: Delete stale circleci credentials
-          command: ruby delete_service_keys.rb credentials-rotator-user
-      - run:
           name: Rotate the federalist-deploy-user credentials
           command: ruby rotate_creds.rb federalist-deploy-user
       - run:
-          name: Rotate the ci-deploy-user credentials
-          command: ruby rotate_creds.rb ci-deploy-user
+          name: Rotate the ci-deploy-federalist-user credentials
+          command: ruby rotate_creds.rb ci-deploy-federalist-user
+      - run:
+          name: Rotate the ci-deploy-federalist-builder-user credentials
+          command: ruby rotate_creds.rb ci-deploy-federalist-builder-user
+
+      - run:
+          name: Delete stale credentials-rotator-user credentials
+          command: ruby delete_service_keys.rb credentials-rotator-user
       - run:
           name: Delete stale federalist-deploy credentials
           command: ruby delete_service_keys.rb federalist-deploy-user
       - run:
-          name: Delete stale circleci credentials
-          command: ruby delete_service_keys.rb ci-deploy-user
+          name: Delete stale ci-deploy-federalist-user credentials
+          command: ruby delete_service_keys.rb ci-deploy-federalist-user
+      - run:
+          name: Delete stale ci-deploy-federalist-builder-user credentials
+          command: ruby delete_service_keys.rb ci-deploy-federalist-builder-user
 
         
 workflows:
@@ -43,8 +50,8 @@ workflows:
       - rotate_credentials
     triggers:
       - schedule:
-          # every night at 13:00 UTC
-          cron: "00 14 * * *"
+          # every night at 06:00 UTC
+          cron: "02 18 * * *"
           filters:
             branches:
               only:
