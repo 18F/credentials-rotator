@@ -35,16 +35,16 @@ jobs:
         
 workflows:
   version: 2
-  login_and_rotate:
-    jobs:
-      - rotate_credentials
+  # login_and_rotate:
+  #   jobs:
+  #     - rotate_credentials
   nightly_staging:
     jobs:
       - rotate_credentials
     triggers:
       - schedule:
           # every night at 13:00 UTC
-          cron: "55 13 * * *"
+          cron: "00 14 * * *"
           filters:
             branches:
               only:
