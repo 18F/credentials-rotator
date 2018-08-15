@@ -43,9 +43,9 @@ workflows:
       - rotate_credentials
     triggers:
       - schedule:
-        # every night at 13:00 UTC
-        cron: "40 13 * * *"
-        filters:
-          branches:
-            only:
-              - staging
+          # every night at 13:00 UTC
+          cron: "48 13 * * *"
+          filters:
+            branches:
+              only:
+                - staging
