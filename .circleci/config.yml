@@ -75,11 +75,12 @@ workflows:
       - schedule:
           # every night at 06:00 UTC
           # cron: "00 06 * * *"
-          cron: "58 20 * * *"
+          cron: "40 17 * * *"
           filters:
             branches:
               only:
                 - staging
+                - master
   nightly_federalist-deploy-user:
     jobs:
       - rotate_federalist-deploy-user
@@ -87,11 +88,12 @@ workflows:
       - schedule:
           # every night at 06:04 UTC
           # cron: "04 06 * * *"
-          cron: "58 20 * * *"
+          cron: "40 17 * * *"
           filters:
             branches:
               only:
                 - staging
+                - master
   nightly_ci-deploy-federalist-user:
     jobs:
       - rotate_ci-deploy-federalist-user
@@ -99,11 +101,12 @@ workflows:
       - schedule:
           # every night at 06:08 UTC
           # cron: "08 06 * * *"
-          cron: "58 20 * * *"
+          cron: "40 17 * * *"
           filters:
             branches:
               only:
                 - staging
+                - master
   nightly_ci-deploy-federalist-builder-user:
     jobs:
       - rotate_ci-deploy-federalist-builder-user
@@ -111,8 +114,9 @@ workflows:
       - schedule:
           # every night at 06:12 UTC
           # cron: "12 06 * * *"
-          cron: "58 20 * * *"
+          cron: "40 17 * * *"
           filters:
             branches:
               only:
                 - staging
+                - master
