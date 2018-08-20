@@ -74,7 +74,7 @@ workflows:
     triggers:
       - schedule:
           # every night at 06:00 UTC
-          cron: "00 06 * * *"
+          cron: "00 06 * * 1-5"
           filters:
             branches:
               only:
@@ -86,7 +86,7 @@ workflows:
     triggers:
       - schedule:
           # every night at 06:04 UTC
-          cron: "04 06 * * *"
+          cron: "04 06 * * 1-5"
           filters:
             branches:
               only:
@@ -98,7 +98,7 @@ workflows:
     triggers:
       - schedule:
           # every night at 06:08 UTC
-          cron: "08 06 * * *"
+          cron: "08 06 * * 1-5"
           filters:
             branches:
               only:
@@ -110,7 +110,7 @@ workflows:
     triggers:
       - schedule:
           # every night at 06:12 UTC
-          cron: "12 06 * * *"
+          cron: "12 06 * * 1-5"
           filters:
             branches:
               only:
